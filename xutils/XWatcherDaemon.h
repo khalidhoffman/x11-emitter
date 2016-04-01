@@ -61,9 +61,9 @@ private:
 
     void printWindows();
 
-    void cPrintWindows();
-
     void sendString(char *windowName, Window window);
+
+//    void sendV8String(char *windowName, Window window);
 
     char *getClientWindowName(Window w);
 

@@ -3,15 +3,13 @@
 //using namespace v8;
 
 Bool xerror = false;
-const unsigned argc = 1;
 char* prevWindowName = (char*)"";
-Window prevParentWindowId = NULL;
 
 int handle_error(Display* display, XErrorEvent* error){
     char* errorDescription;
     int errorDescriptionLength;
 //    XGetErrorText(display, error->error_code, errorDescription, errorDescriptionLength);
-//    printf("ERROR: X11 error\n");
+//    printf("ERROR: X11 error: %s\n", errorDescription);
     xerror = True;
     return 1;
 }
@@ -75,10 +73,8 @@ void XWatcherDaemon::captureWindowChange(){
 //    long eventmask = FocusChangeMask;
 
     XSelectInput(this->display, this->namedWindow, eventmask);
-    char* name;
     do {
 //        this->printWindows();
-//        XWindowEvent(display, root_win, eventmask, &event);
         XNextEvent(this->display, &event);
 
         switch (event.type) {
@@ -88,14 +84,6 @@ void XWatcherDaemon::captureWindowChange(){
             case FocusIn:
             case PropertyNotify:
                 this->processWindow();
-//                name = searchForName(this->topFocusedWindow);
-//                if( name == NULL){
-//                    name = getClientWindowName(this->clientWindow);
-//                }
-//                if( name == NULL){
-//                    name = (char *) "(null name)";
-//                };
-//                this->processWindowName(name);
                 break;
             default:
                 std::cout << "other: "<< event.type << std::endl;
@@ -112,9 +100,6 @@ void XWatcherDaemon::processWindow(){
     if( name == NULL){
         name = (char *) "(null name)";
     };
-//    if(getParentWindow(this->clientWindow) != prevParentWindowId){
-//        prevParentWindowId = getParentWindow(this->clientWindow);
-//    }
     this->processWindowName(name, getParentWindow(this->clientWindow));
 }
 
@@ -127,13 +112,17 @@ void XWatcherDaemon::processWindowName(char* windowName, Window window){
 }
 
 void XWatcherDaemon::sendString(char* windowName, Window window){
-    printf("%s - %i\n", windowName, window);
+    printf("%s - %i\n", windowName, (int)window);
 }
 
+// replace sendString function for node.js compatibility
 //void XWatcherDaemon::sendString(char* windowName, Window window){
 //    Local<Object> obj = Object::New(isolate);
 //    obj->Set(String::NewFromUtf8(isolate, "raw"), String::NewFromUtf8(this->isolate, windowName));
-//    obj->Set( String::NewFromUtf8(isolate, "parent"), Number::New(this->isolate, window));
+//    obj->Set( String::NewFromUtf8(isolate, "parentWindow"), Number::New(this->isolate, getParentWindow(this->clientWindow)));
+//    obj->Set( String::NewFromUtf8(isolate, "clientWindow"), Number::New(this->isolate, window));
+//    obj->Set( String::NewFromUtf8(isolate, "namedWindow"), Number::New(this->isolate, this->namedWindow));
+//    obj->Set( String::NewFromUtf8(isolate, "focusWindow"), Number::New(this->isolate, this->focusWindow));
 //    Local<Value> argumentVector[argc] = { obj };
 //    this->callbackFunction->Call(this->isolate->GetCurrentContext()->Global(), argc, argumentVector);
 //}
@@ -186,7 +175,6 @@ char* XWatcherDaemon::searchForName(Window window){
 }
 
 Window XWatcherDaemon::get_root_window(){
-    Window w;
     int screen_num = DefaultScreen(this->display);
     Screen *screen = XScreenOfDisplay(this->display, screen_num);
     Window root_win = RootWindow(this->display, XScreenNumberOfScreen(screen));
@@ -288,7 +276,7 @@ Window XWatcherDaemon::getClientWindow(Window window) {
                                      &data);
 
     if (status != Success ) {
-//        std::cout << "Unsucessfully grabed WM_CLIENT_LEADER." << std::endl;
+//        std::cout << "Unsuccessfully grabbed WM_CLIENT_LEADER." << std::endl;
         return window;
     }
 
@@ -297,9 +285,6 @@ Window XWatcherDaemon::getClientWindow(Window window) {
         return window;
     }
 
-    if (status != Success || actual_type == None) {
-        return (*leader);
-    }
     leader = reinterpret_cast<Window*> (data);
     return (*leader);
 }
@@ -360,15 +345,6 @@ void XWatcherDaemon::printWindows(){
     std::cout << "subClientWindow: " << this->subClientWindow << std::endl;
     std::cout << "clientWindow: " << this->clientWindow << std::endl;
 }
-
-void XWatcherDaemon::cPrintWindows(){
-    printf("namedWindow: ", this->namedWindow );
-    printf("topFocusedWindow: ", this->topFocusedWindow );
-    printf("focusWindow: ", this->focusWindow );
-    printf("subClientWindow: ", this->subClientWindow );
-    printf("clientWindow: ", this->clientWindow );
-}
-
 
 Window XWatcherDaemon::Window_With_Name( Window top, const char *name){
     Window *children, dummy;
@@ -435,7 +411,7 @@ Display* XWatcherDaemon::get_client_display(Window window) {
                                     &count,
                                     &after_ret,
                                     (unsigned char **) &data);
-    if ((result != Success)) {
+    if (result != Success) {
 //        std::cout << "Failed to find client display." << std::endl;
         if (data) {
             XFree(data);
@@ -443,6 +419,5 @@ Display* XWatcherDaemon::get_client_display(Window window) {
     } else{
         // successfully found client display
     }
-    Display* clientDisplay = (Display*) data;
     return (Display*) data;
 }

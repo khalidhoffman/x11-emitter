@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(TimeWatcher)
+project(activity-monitor)
 
 find_package(Boost COMPONENTS system thread regex REQUIRED)
 if(Boost_FOUND)
@@ -16,5 +16,5 @@ set(SOURCE_FILES main.cpp xutils/XWatcherDaemon.cpp xutils/XWatcherDaemon.h)
 include_directories(/usr/include/mongocxx/v0.3/)
 include_directories(/usr/include/bsoncxx/v0.3/)
 
-add_executable(TimeWatcher ${SOURCE_FILES})
-target_link_libraries (TimeWatcher ${EXTRA_LIBS})
+add_executable(activity-monitor ${SOURCE_FILES})
+target_link_libraries (activity-monitor ${EXTRA_LIBS})
