@@ -1,12 +1,12 @@
 #include <cstdlib>
 #include <iostream>
-#include "xutils/XWatcherDaemon.h"
+#include "xutils/XWatchDaemon.h"
 
 using namespace std;
 
 int main() {
     cout<<"listening..."<<endl;
-    XWatcherDaemon *daemon = new XWatcherDaemon();
+    XWatchDaemon *daemon = new XWatchDaemon();
     daemon->start();
     return 0;
 }

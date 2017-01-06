@@ -1,4 +1,4 @@
-#include "XWatcherDaemon.h"
+#include "XWatchDaemon.h"
 
 // uncomment namespace for v8 compatability
 //using namespace v8;
@@ -16,17 +16,17 @@ int handle_error(Display* display, XErrorEvent* error){
     return 1;
 }
 
-XWatcherDaemon::XWatcherDaemon() {
+XWatchDaemon::XWatchDaemon() {
     this->state = new XWatchDaemonState();
 }
 
-XWatcherDaemon::~XWatcherDaemon(){
+XWatchDaemon::~XWatchDaemon(){
     XFlush(this->display);
     XUngrabServer(this->display);
     XCloseDisplay(this->display );
 }
 
-void XWatcherDaemon::init(){
+void XWatchDaemon::init(){
     this->display = this->openDisplay();
 
     XSetErrorHandler(handle_error);
@@ -37,7 +37,7 @@ void XWatcherDaemon::init(){
     this->state->isInitialized = true;
 }
 
-void XWatcherDaemon::start(){
+void XWatchDaemon::start(){
     if(!this->isInitialized()){
         this->init();
     }
@@ -45,7 +45,7 @@ void XWatcherDaemon::start(){
     this->run();
 }
 
-void XWatcherDaemon::run(){
+void XWatchDaemon::run(){
     // options include: PropertyChangeMask | FocusChangeMask | StructureNotifyMask | SubstructureNotifyMask | EnterWindowMask | LeaveWindowMask;;
     long eventmask = PropertyChangeMask | FocusChangeMask ;
     XEvent event;
@@ -70,11 +70,11 @@ void XWatcherDaemon::run(){
     } while (this->state->shouldUpdate);
 }
 
-void XWatcherDaemon::stop(){
+void XWatchDaemon::stop(){
     this->state->shouldUpdate = false;
 }
 
-void XWatcherDaemon::update(){
+void XWatchDaemon::update(){
     xerror = false;
     this->updateFocusWindow();
     this->updateTopFocusedWindow();
@@ -85,7 +85,7 @@ void XWatcherDaemon::update(){
     }
 }
 
-void XWatcherDaemon::notify(){
+void XWatchDaemon::notify(){
     char* name = this->searchWindowChildrenForName(this->topFocusedWindow);
     if( name == NULL){
         name = this->getClientWindowName();
@@ -111,23 +111,23 @@ void XWatcherDaemon::notify(){
     }
 }
 
-bool XWatcherDaemon::isInitialized() {
+bool XWatchDaemon::isInitialized() {
     return this->state->isInitialized;
 }
 
-bool XWatcherDaemon::isRunning() {
+bool XWatchDaemon::isRunning() {
     return this->state->isRunning;
 }
 
-bool XWatcherDaemon::hasValidData(){
+bool XWatchDaemon::hasValidData(){
     return this->namedClientWindow != NULL;
 }
 
-void XWatcherDaemon::onWindowChange(){
+void XWatchDaemon::onWindowChange(){
     this->notify();
 }
 
-void XWatcherDaemon::updateFocusWindow(){
+void XWatchDaemon::updateFocusWindow(){
     Window focusWindow;
     int focusState;
 
@@ -146,7 +146,7 @@ void XWatcherDaemon::updateFocusWindow(){
 // a top window have the following specifications.
 //  * the start window is contained the descendent windows.
 //  * the parent window is the root window.
-void XWatcherDaemon::updateTopFocusedWindow(){
+void XWatchDaemon::updateTopFocusedWindow(){
     if (xerror || this->focusWindow == NULL){
          this->topFocusedWindow = NULL;
     } else {
@@ -177,7 +177,7 @@ void XWatcherDaemon::updateTopFocusedWindow(){
 
 // search a named window (that has a WM_STATE prop)
 // on the descendent windows of the argment Window.
-void XWatcherDaemon::updateNamedWindow(){
+void XWatchDaemon::updateNamedWindow(){
     Window topFocusedWindow = this->topFocusedWindow;
     Window namedClientWindow ;
 //    printf("getting named window ... ");
@@ -194,7 +194,7 @@ void XWatcherDaemon::updateNamedWindow(){
     }
 }
 
-void XWatcherDaemon::updateSubClientWindow(){
+void XWatchDaemon::updateSubClientWindow(){
     if (this->namedClientWindow == NULL) {
         this->subClientWindow = NULL;
     } else {
@@ -202,7 +202,7 @@ void XWatcherDaemon::updateSubClientWindow(){
     }
 }
 
-void XWatcherDaemon::updateClientWindow() {
+void XWatchDaemon::updateClientWindow() {
     if (this->subClientWindow == NULL) {
         this->clientWindow = NULL;
     } else {
@@ -242,20 +242,20 @@ void XWatcherDaemon::updateClientWindow() {
 
 }
 
-void XWatcherDaemon::updateRootWindow(){
+void XWatchDaemon::updateRootWindow(){
     int screen_num = DefaultScreen(this->display);
     Screen *screen = XScreenOfDisplay(this->display, screen_num);
     Window root_win = RootWindow(this->display, XScreenNumberOfScreen(screen));
     this->rootWindow = root_win;
 }
 
-Window XWatcherDaemon::getRootWindow() {
+Window XWatchDaemon::getRootWindow() {
     this->updateRootWindow();
     return this->rootWindow;
 }
 
 // (XFetchName cannot get a name with multi-byte chars)
-char* XWatcherDaemon::getClientWindowName(){
+char* XWatchDaemon::getClientWindowName(){
     char* name = (char*)"n/a";
 
     if (this->clientWindow == NULL){
@@ -285,17 +285,17 @@ char* XWatcherDaemon::getClientWindowName(){
     return name;
 }
 
-Display* XWatcherDaemon::openDisplay(){
+Display* XWatchDaemon::openDisplay(){
     char* displayName = NULL;
     Display *display = XOpenDisplay(displayName);
     if(display == NULL){
-        printf("fail -(XWatcherDaemon::openDisplay)\n");
+        printf("fail -(XWatchDaemon::openDisplay)\n");
         exit(1);
     }
     return display;
 }
 
-char* XWatcherDaemon::searchWindowChildrenForName(Window window){
+char* XWatchDaemon::searchWindowChildrenForName(Window window){
     Window returnedRoot,
             returnedParent,
             *children;
@@ -330,7 +330,7 @@ char* XWatcherDaemon::searchWindowChildrenForName(Window window){
 }
 
 // (XFetchName cannot get a name with multi-byte chars)
-void XWatcherDaemon::printWindowName(Window w){
+void XWatchDaemon::printWindowName(Window w){
     XTextProperty prop;
     Status s;
 
@@ -349,7 +349,7 @@ void XWatcherDaemon::printWindowName(Window w){
     }
 }
 
-void XWatcherDaemon::printWindows(){
+void XWatchDaemon::printWindows(){
     std::cout << "namedClientWindow: " << this->namedClientWindow << std::endl;
     std::cout << "topFocusedWindow: " << this->topFocusedWindow << std::endl;
     std::cout << "focusWindow: " << this->focusWindow << std::endl;
@@ -357,7 +357,7 @@ void XWatcherDaemon::printWindows(){
     std::cout << "clientWindow: " << this->clientWindow << std::endl;
 }
 
-void XWatcherDaemon::printWindowClass(Window w){
+void XWatchDaemon::printWindowClass(Window w){
     Status s;
     XClassHint*classhint;
 
@@ -376,7 +376,7 @@ void XWatcherDaemon::printWindowClass(Window w){
     }
 }
 
-void XWatcherDaemon::printWindowInfo(Window w){
+void XWatchDaemon::printWindowInfo(Window w){
     printf("--\n");
     printWindowName(w);
     printWindowClass(w);
