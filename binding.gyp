@@ -1,8 +1,8 @@
 {
   "targets": [
     {
-      "target_name": "X11Emitter",
-      "sources": [ "XWatcherDaemon.h", "XWatcherDaemon.cpp", "XWatcher.cpp" ],
+      "target_name": "x11-emitter",
+      "sources": [ "xutils/XWatchDaemon.h", "xutils/XWatchDaemon.cpp", "./XWatch.cpp" ],
       "libraries": ["-lX11", "-lXmu"],
       "conditions": [
         ["OS=='linux'", {

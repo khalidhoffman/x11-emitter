@@ -2,8 +2,8 @@
 // Created by kah8br on 8/24/15.
 //
 
-#ifndef TIMEWATCHER_XWATCHERDAEMON_H
-#define TIMEWATCHER_XWATCHERDAEMON_H
+#ifndef TIMEWATCH_XWATCHDAEMON_H
+#define TIMEWATCH_XWATCHDAEMON_H
 
 #include <iostream>
 #include <locale.h>
@@ -20,11 +20,11 @@ struct XWatchDaemonState{
     char* prevWindowName = (char*)"";
 };
 
-class XWatcherDaemon {
+class XWatchDaemon {
 
 public:
-    XWatcherDaemon();
-    ~XWatcherDaemon();
+    XWatchDaemon();
+    ~XWatchDaemon();
 
     bool isRunning();
     void start();
@@ -82,4 +82,4 @@ private:
 };
 
 
-#endif //TIMEWATCHER_XWATCHERDAEMON_H
+#endif //TIMEWATCH_XWATCHDAEMON_H

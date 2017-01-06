@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <string.h>
-#include "XWatcherDaemon.h"
+#include "xutils/XWatchDaemon.h"
 
 using namespace v8;
 
@@ -16,12 +16,12 @@ void RunCallback(const FunctionCallbackInfo<Value>& args) {
     const unsigned argc = 1;
     unsigned long numOfWindows;
     char **windowsV2;
-    XWatcherDaemon *daemon = new XWatcherDaemon(cb, isolate);
+    XWatchDaemon *daemon = new XWatchDaemon(cb, isolate);
     daemon->start();
 }
 
-void Init(Handle<Object> exports, Handle<Object> module) {
+void init(Handle<Object> exports, Handle<Object> module) {
     NODE_SET_METHOD(module, "exports", RunCallback);
 }
 
-NODE_MODULE(addon, Init)
+NODE_MODULE(addon, init)
