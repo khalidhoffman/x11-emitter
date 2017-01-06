@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/khalidhoffman/x11-emitter.git"
+    "url": "git+https://github.com/khalidhoffman/x11-emitter.git#nodejs"
   },
   "keywords": [
     "x11",
