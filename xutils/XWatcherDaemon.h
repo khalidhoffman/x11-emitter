@@ -15,65 +15,70 @@
 #include <X11/Xos.h>
 #include <X11/Xutil.h>
 
+struct XWatchDaemonState{
+    bool isRunning, isInitialized, shouldUpdate;
+    char* prevWindowName = (char*)"";
+};
+
 class XWatcherDaemon {
 
 public:
     XWatcherDaemon();
-
     ~XWatcherDaemon();
-    bool isDaemonRunning();
+
+    bool isRunning();
     void start();
-    void quit();
-    void updateWindows();
-
-private:
-    Display *display;
-    bool isRunning, isInit = false, shouldUpdate;
-
-    Window namedWindow, topFocusedWindow, focusWindow, subClientWindow, clientWindow;
-
-    char *searchForName(Window window);
-
-    Display *get_client_display(Window window);
-
-    Display *open_display();
-
-    Window getNamedSubWindow(Window window);
-
-    Window get_root_window();
-
-    Window getClientWindow(Window window);
-
-    Window getParentWindow(Window start);
-
-    Window get_focus_window();
-
-    void onQuit();
-    void init();
-    void captureWindowChange();
     void stop();
 
-    void print_window_info(Window w);
+private:
 
-    void print_window_class(Window w);
+    Display* display;
 
-    void print_window_name(Window w);
+    Window namedClientWindow, topFocusedWindow, focusWindow, subClientWindow, clientWindow, rootWindow;
+
+    Display *openDisplay();
+
+    XWatchDaemonState* state;
+
+    void init();
+
+    void run();
+
+    void update();
+
+    void notify();
+
+    bool hasValidData();
+
+    bool isInitialized();
+
+    void onWindowChange();
+
+    void updateFocusWindow();
+
+    void updateTopFocusedWindow();
+
+    void updateSubClientWindow();
+
+    void updateClientWindow();
+
+    void updateNamedWindow();
+
+    void updateRootWindow();
+
+    Window getRootWindow();
+
+    char* searchWindowChildrenForName(Window window);
+
+    char* getClientWindowName();
+
+    void printWindowInfo(Window w);
+
+    void printWindowClass(Window w);
+
+    void printWindowName(Window w);
 
     void printWindows();
-
-    void sendString(char *windowName, Window window);
-
-//    void sendV8String(char *windowName, Window window);
-
-    char *getClientWindowName(Window w);
-
-    Window Window_With_Name(Window top, const char *name);
-
-    void updateDaemon();
-
-    void processWindow();
-
-    void processWindowName(char *windowName, Window window);
 };
 
 
