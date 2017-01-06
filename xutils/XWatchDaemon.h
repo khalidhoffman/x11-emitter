@@ -1,7 +1,3 @@
-//
-// Created by kah8br on 8/24/15.
-//
-
 #ifndef TIMEWATCH_XWATCHDAEMON_H
 #define TIMEWATCH_XWATCHDAEMON_H
 
@@ -9,11 +5,16 @@
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <node.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xmu/WinUtil.h>
 #include <X11/Xos.h>
 #include <X11/Xutil.h>
+
+
+// uncomment for v8 compatibility
+using namespace v8;
 
 struct XWatchDaemonState{
     bool isRunning, isInitialized, shouldUpdate;
@@ -23,12 +24,18 @@ struct XWatchDaemonState{
 class XWatchDaemon {
 
 public:
-    XWatchDaemon();
+    XWatchDaemon() : state(new XWatchDaemonState()){}
     ~XWatchDaemon();
+    // uncomment for v8 compatiblity
+    XWatchDaemon(Local<Function>& callback, Isolate* isolate) : callback(callback), isolate(isolate), state(new XWatchDaemonState()) {}
 
     bool isRunning();
     void start();
     void stop();
+
+    // uncomment for v8 compatibility
+    Local<Function> callback;
+    Isolate* isolate;
 
 private:
 
@@ -36,7 +43,7 @@ private:
 
     Window namedClientWindow, topFocusedWindow, focusWindow, subClientWindow, clientWindow, rootWindow;
 
-    Display *openDisplay();
+    Display* openDisplay();
 
     XWatchDaemonState* state;
 

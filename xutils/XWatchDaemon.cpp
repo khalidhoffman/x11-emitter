@@ -1,8 +1,5 @@
 #include "XWatchDaemon.h"
 
-// uncomment namespace for v8 compatability
-//using namespace v8;
-
 Bool xerror = false;
 
 int handle_error(Display* display, XErrorEvent* error){
@@ -16,14 +13,11 @@ int handle_error(Display* display, XErrorEvent* error){
     return 1;
 }
 
-XWatchDaemon::XWatchDaemon() {
-    this->state = new XWatchDaemonState();
-}
-
 XWatchDaemon::~XWatchDaemon(){
     XFlush(this->display);
     XUngrabServer(this->display);
     XCloseDisplay(this->display );
+    delete(this->state);
 }
 
 void XWatchDaemon::init(){
@@ -86,6 +80,7 @@ void XWatchDaemon::update(){
 }
 
 void XWatchDaemon::notify(){
+    const unsigned int argCount = 1;
     char* name = this->searchWindowChildrenForName(this->topFocusedWindow);
     if( name == NULL){
         name = this->getClientWindowName();
@@ -95,19 +90,18 @@ void XWatchDaemon::notify(){
     };
     if( strcmp (name, this->state->prevWindowName) != 0 ) {
         this->state->prevWindowName = name;
-        printf("%s - %i\n", name, (int)this->clientWindow);
 
-        /* replace printf with below for v8 compatibility */
-        /*
-        Local<Object> obj = Object::New(isolate);
-        obj->Set(String::NewFromUtf8(isolate, "raw"), String::NewFromUtf8(this->isolate, name));
-        obj->Set( String::NewFromUtf8(isolate, "parentWindow"), Number::New(this->isolate, this->topFocusedWindow));
-        obj->Set( String::NewFromUtf8(isolate, "clientWindow"), Number::New(this->isolate, this->clientWindow));
-        obj->Set( String::NewFromUtf8(isolate, "namedClientWindow"), Number::New(this->isolate, this->namedClientWindow));
-        obj->Set( String::NewFromUtf8(isolate, "focusWindow"), Number::New(this->isolate, this->focusWindow));
-        Local<Value> argumentVector[argc] = { obj };
-        this->callbackFunction->Call(this->isolate->GetCurrentContext()->Global(), argc, argumentVector);
-        */
+        Local<Object> eventData = Object::New(this->isolate);
+
+        eventData->Set( String::NewFromUtf8(this->isolate, "clientWindow"), Number::New(this->isolate, this->clientWindow));
+        eventData->Set( String::NewFromUtf8(this->isolate, "focusWindow"), Number::New(this->isolate, this->focusWindow));
+        eventData->Set( String::NewFromUtf8(this->isolate, "namedClientWindow"), Number::New(this->isolate, this->namedClientWindow));
+        eventData->Set( String::NewFromUtf8(this->isolate, "parentWindow"), Number::New(this->isolate, this->topFocusedWindow));
+        eventData->Set( String::NewFromUtf8(this->isolate, "raw"), String::NewFromUtf8(this->isolate, name));
+
+        Local<Value> callbackArgs[argCount] = { eventData };
+
+        this->callback->Call(this->isolate->GetCurrentContext()->Global(), argCount, callbackArgs);
     }
 }
 
